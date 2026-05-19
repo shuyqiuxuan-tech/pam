@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UP Discount Calculator</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+  :root {
+    --red-900: #501313; --red-800: #791F1F; --red-700: #A32D2D; --red-600: #A32D2D;
+    --red-400: #E24B4A; --red-200: #F09595; --red-100: #F7C1C1; --red-50: #FCEBEB;
+    --color-text-primary: #1a1a1a; --color-text-secondary: #555; --color-text-tertiary: #999;
+    --color-background-primary: #fff; --color-background-secondary: #f6f6f4;
+    --color-border-tertiary: rgba(0,0,0,0.12); --color-border-secondary: rgba(0,0,0,0.25);
+    --border-radius-md: 8px; --border-radius-lg: 12px;
+  }
+  body { background: #f9f8f6; padding: 2rem 1rem; }
+  .app { max-width: 760px; margin: 0 auto; background: white; border-radius: 16px; padding: 2rem; border: 1px solid var(--color-border-tertiary); }
+  .app-header { margin-bottom: 1.75rem; border-bottom: 1px solid var(--color-border-tertiary); padding-bottom: 1.25rem; }
+  .app-header h1 { font-size: 20px; font-weight: 500; color: var(--red-800); }
+  .app-header p { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+  .section-title { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--red-700); margin-bottom: 10px; }
+  .step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .step-badge { width: 26px; height: 26px; border-radius: 50%; background: var(--red-800); color: white; font-size: 13px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .step-label { font-size: 15px; font-weight: 500; color: var(--color-text-primary); }
+  .step-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 1px; }
+  .step-block { margin-bottom: 1.75rem; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .pkg-card { border: 1px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 12px 14px; cursor: pointer; background: var(--color-background-primary); transition: all 0.15s; }
+  .pkg-card:hover { border-color: var(--red-400); }
+  .pkg-card.selected { border: 1.5px solid var(--red-700); background: var(--red-50); }
+  .pkg-card .pkg-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+  .pkg-card .pkg-price { font-size: 12px; color: var(--color-text-secondary); margin-top: 3px; }
+  .pkg-card .pkg-type { font-size: 10px; color: var(--red-700); margin-bottom: 5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .pkg-check { float: right; color: var(--red-700); font-size: 16px; display: none; }
+  .pkg-card.selected .pkg-check { display: inline; }
+  .period-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .period-btn { border: 1px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 8px 14px; font-size: 13px; cursor: pointer; background: var(--color-background-primary); color: var(--color-text-primary); transition: all 0.15s; }
+  .period-btn:hover { border-color: var(--red-400); }
+  .period-btn.selected { border: 1.5px solid var(--red-700); background: var(--red-50); color: var(--red-800); font-weight: 500; }
+  .pkg-selector-area { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  .slot-box { border: 1px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; background: var(--color-background-secondary); }
+  .slot-title { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .slot-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red-600); }
+  .result-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 0.5rem; }
+  .result-pkg-card { border: 1px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 16px; background: var(--color-background-primary); cursor: pointer; transition: all 0.15s; position: relative; }
+  .result-pkg-card:hover { border-color: var(--red-400); }
+  .result-pkg-card.expanded { border: 1.5px solid var(--red-800); }
+  .result-pkg-card .r-tier { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; color: var(--red-700); margin-bottom: 6px; }
+  .result-pkg-card .r-price-full { font-size: 12px; color: var(--color-text-secondary); text-decoration: line-through; }
+  .result-pkg-card .r-price-final { font-size: 22px; font-weight: 500; color: var(--color-text-primary); line-height: 1.2; margin: 2px 0; }
+  .result-pkg-card .r-disc-badge { display: inline-block; background: var(--red-50); color: var(--red-800); font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; margin-top: 4px; border: 1px solid var(--red-100); }
+  .expand-arrow { position: absolute; right: 12px; top: 14px; font-size: 14px; color: var(--color-text-tertiary); transition: transform 0.2s; }
+  .result-pkg-card.expanded .expand-arrow { transform: rotate(180deg); }
+  .totals-bar { background: var(--red-800); color: white; border-radius: var(--border-radius-lg); padding: 14px 18px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .totals-bar .t-item { text-align: center; }
+  .totals-bar .t-label { font-size: 10px; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .totals-bar .t-val { font-size: 16px; font-weight: 500; }
+  .breakdown-section { border: 1px solid var(--red-100); border-radius: var(--border-radius-lg); padding: 14px 16px; margin-top: 12px; background: var(--red-50); display: none; }
+  .breakdown-section.visible { display: block; }
+  .breakdown-section h4 { font-size: 13px; font-weight: 500; color: var(--red-900); margin-bottom: 10px; }
+  .bk-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 0.5px solid var(--red-100); font-size: 12px; }
+  .bk-row:last-child { border-bottom: none; }
+  .bk-label { color: var(--color-text-secondary); }
+  .bk-val { font-weight: 500; color: var(--color-text-primary); }
+  .bk-val.highlight { color: var(--red-800); }
+  .divider { height: 1px; background: var(--color-border-tertiary); margin: 1.5rem 0; }
+  .notice-bar { background: var(--color-background-secondary); border-left: 3px solid var(--red-600); border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; padding: 10px 14px; font-size: 12px; color: var(--color-text-secondary); margin-bottom: 1.25rem; line-height: 1.6; }
+  .notice-bar strong { color: var(--red-800); font-weight: 500; }
+  .pkg-type-section { margin-bottom: 12px; }
+  .pkg-type-label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="app-header">
+    <h1>UP Package Discount Calculator</h1>
+    <p>Sales tool — calculate upgrade discounts for client conversations</p>
+  </div>
+
+  <div class="notice-bar"><strong>Note:</strong> Agents may only purchase 1 new package (Bronze–Elite) going forward. If an agent has both a PGMY and IPP package, they may only renew to one new package.</div>
+
+  <!-- STEP 1 -->
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-badge">1</div>
+      <div>
+        <div class="step-label">Select up to 2 current packages</div>
+        <div class="step-sub">Each package will be mapped to all 4 new tiers</div>
+      </div>
+    </div>
+
+    <div class="pkg-selector-area" style="margin-bottom: 14px;">
+      <div class="slot-box" id="slot1">
+        <div class="slot-title"><div class="slot-dot"></div>Package 1</div>
+        <div id="slot1-display" style="font-size: 12px; color: var(--color-text-tertiary);">Not selected</div>
+      </div>
+      <div class="slot-box" id="slot2">
+        <div class="slot-title"><div class="slot-dot" style="background: var(--red-400);"></div>Package 2 <span style="font-size:10px; color: var(--color-text-tertiary); margin-left: 4px;">(optional)</span></div>
+        <div id="slot2-display" style="font-size: 12px; color: var(--color-text-tertiary);">Not selected</div>
+      </div>
+    </div>
+
+    <div class="pkg-type-section">
+      <div class="pkg-type-label">PGMY packages</div>
+      <div class="card-grid">
+        <div class="pkg-card" data-pkg="Core" data-group="PGMY" data-price="2088" onclick="selectPkg(this)">
+          <div class="pkg-type">PGMY</div>
+          <i class="ti ti-check pkg-check" aria-hidden="true"></i>
+          <div class="pkg-name">Core</div><div class="pkg-price">RM 2,088</div>
+        </div>
+        <div class="pkg-card" data-pkg="Pro" data-group="PGMY" data-price="3188" onclick="selectPkg(this)">
+          <div class="pkg-type">PGMY</div>
+          <i class="ti ti-check pkg-check" aria-hidden="true"></i>
+          <div class="pkg-name">Pro</div><div class="pkg-price">RM 3,188</div>
+        </div>
+        <div class="pkg-card" data-pkg="Max" data-group="PGMY" data-price="5058" onclick="selectPkg(this)">
+          <div class="pkg-type">PGMY</div>
+          <i class="ti ti-check pkg-check" aria-hidden="true"></i>
+          <div class="pkg-name">Max</div><div class="pkg-price">RM 5,058</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pkg-type-section">
+      <div class="pkg-type-label">IPP packages</div>
+      <div class="card-grid">
+        <div class="pkg-card" data-pkg="iCore" data-group="iPMY" data-price="2380" onclick="selectPkg(this)">
+          <div class="pkg-type">IPP</div>
+          <i class="ti ti-check pkg-check" aria-hidden="true"></i>
+          <div class="pkg-name">iCore</div><div class="pkg-price">RM 2,380</div>
+        </div>
+        <div class="pkg-card" data-pkg="iPro" data-group="iPMY" data-price="3680" onclick="selectPkg(this)">
+          <div class="pkg-type">IPP</div>
+          <i class="ti ti-check pkg-check" aria-hidden="true"></i>
+          <div class="pkg-name">iPro</div><div class="pkg-price">RM 3,680</div>
+        </div>
+        <div class="pkg-card" data-pkg="iMax" data-group="iPMY" data-price="5080" onclick="selectPkg(this)">
+          <div class="pkg-type">IPP</div>
+          <i class="ti ti-check pkg-check" aria-hidden="true"></i>
+          <div class="pkg-name">iMax</div><div class="pkg-price">RM 5,080</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pkg-type-section">
+      <div class="pkg-type-label">Plus packages</div>
+      <div class="card-grid">
+        <div class="pkg-card" data-pkg="CorePlus" data-group="Plus" data-price="3998" onclick="selectPkg(this)">
+          <div class="pkg-type">Plus</div>
+          <i class="ti ti-check pkg-check" aria-hidden="true"></i>
+          <div class="pkg-name">CorePlus</div><div class="pkg-price">RM 3,998</div>
+        </div>
+        <div class="pkg-card" data-pkg="DuoPlus" data-group="Plus" data-price="6128" onclick="selectPkg(this)">
+          <div class="pkg-type">Plus</div>
+          <i class="ti ti-check pkg-check" aria-hidden="true"></i>
+          <div class="pkg-name">DuoPlus</div><div class="pkg-price">RM 6,128</div>
+        </div>
+        <div class="pkg-card" data-pkg="MaxPlus" data-group="Plus" data-price="9668" onclick="selectPkg(this)">
+          <div class="pkg-type">Plus</div>
+          <i class="ti ti-check pkg-check" aria-hidden="true"></i>
+          <div class="pkg-name">MaxPlus</div><div class="pkg-price">RM 9,668</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step-block">
+    <div class="step-header">
+      <div class="step-badge">2</div>
+      <div>
+        <div class="step-label">Select period</div>
+        <div class="step-sub">When is the agent renewing?</div>
+      </div>
+    </div>
+    <div class="period-grid" id="period-grid">
+      <button class="period-btn" data-period="EB" onclick="selectPeriod(this)">EB / Renewal</button>
+      <button class="period-btn" data-period="WB" onclick="selectPeriod(this)">Win Back (AM+1)</button>
+      <button class="period-btn" data-period="3" onclick="selectPeriod(this)">3 months remaining</button>
+      <button class="period-btn" data-period="4" onclick="selectPeriod(this)">4 months remaining</button>
+      <button class="period-btn" data-period="5" onclick="selectPeriod(this)">5 months remaining</button>
+      <button class="period-btn" data-period="6" onclick="selectPeriod(this)">6 months remaining</button>
+      <button class="period-btn" data-period="7" onclick="selectPeriod(this)">7 months remaining</button>
+      <button class="period-btn" data-period="8" onclick="selectPeriod(this)">8 months remaining</button>
+      <button class="period-btn" data-period="9" onclick="selectPeriod(this)">9 months remaining</button>
+      <button class="period-btn" data-period="10" onclick="selectPeriod(this)">10 months remaining</button>
+      <button class="period-btn" data-period="11" onclick="selectPeriod(this)">11 months remaining</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Results -->
+  <div id="results-section" style="display: none;">
+    <div class="divider"></div>
+    <div class="step-header" style="margin-bottom: 1rem;">
+      <div class="step-badge" style="background: #f0f0ec; color: var(--red-800); border: 1px solid var(--red-200);">3</div>
+      <div>
+        <div class="step-label">Results</div>
+        <div class="step-sub">Click any package card to see a detailed breakdown</div>
+      </div>
+    </div>
+    <div id="results-per-pkg"></div>
+    <div id="totals-bar" class="totals-bar" style="display: none;"></div>
+  </div>
+
+</div>
+
+<script>
+const SST = 0.08;
+const TIERS = ['Bronze', 'Silver', 'Gold', 'Elite'];
+const TIER_PRICES = { Bronze: 3998, Silver: 6238, Gold: 11138, Elite: 19888 };
+
+const DISC = {
+  PGMY: {
+    Core: { EB: 300, WB: 100, 3: 131, 4: 174, 5: 218, 6: 261, 7: 305, 8: 348, 9: 392, 10: 435, 11: 479 },
+    Pro:  { EB: 100, WB: 40,  3: 199, 4: 266, 5: 332, 6: 399, 7: 465, 8: 531, 9: 598, 10: 664, 11: 731 },
+    Max:  { EB: 50,  WB: 0,   3: 0,   4: 0,   5: 0,   6: 0,   7: 0,   8: 0,   9: 0,   10: 0,  11: 0   },
+  },
+  iPMY: {
+    iCore: { EB: 250, WB: 80,  3: 149, 4: 198, 5: 248, 6: 298, 7: 347, 8: 397, 9: 446, 10: 496, 11: 545 },
+    iPro:  { EB: 50,  WB: 20,  3: 230, 4: 307, 5: 383, 6: 460, 7: 537, 8: 613, 9: 690, 10: 767, 11: 843 },
+    iMax:  { EB: 50,  WB: 0,   3: 0,   4: 0,   5: 0,   6: 0,   7: 0,   8: 0,   9: 0,   10: 0,  11: 0   },
+  },
+  Plus: {
+    CorePlus: { EB: 50,  WB: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0 },
+    DuoPlus:  { EB: 50,  WB: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0 },
+    MaxPlus:  { EB: 50,  WB: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0 },
+  }
+};
+
+const DISC_SILVER = {
+  PGMY: {
+    Core: { EB: 850, WB: 420, 3: 131, 4: 174, 5: 218, 6: 261, 7: 305, 8: 348, 9: 392, 10: 435, 11: 479 },
+    Pro:  { EB: 600, WB: 310, 3: 199, 4: 266, 5: 332, 6: 399, 7: 465, 8: 531, 9: 598, 10: 664, 11: 731 },
+    Max:  { EB: 250, WB: 120, 3: 316, 4: 422, 5: 527, 6: 632, 7: 738, 8: 843, 9: 948, 10: 1054, 11: 1159 },
+  },
+  iPMY: {
+    iCore: { EB: 750, WB: 390, 3: 149, 4: 198, 5: 248, 6: 298, 7: 347, 8: 397, 9: 446, 10: 496, 11: 545 },
+    iPro:  { EB: 500, WB: 260, 3: 230, 4: 307, 5: 383, 6: 460, 7: 537, 8: 613, 9: 690, 10: 767, 11: 843 },
+    iMax:  { EB: 250, WB: 120, 3: 318, 4: 423, 5: 529, 6: 635, 7: 741, 8: 847, 9: 953, 10: 1058, 11: 1164 },
+  },
+  Plus: {
+    CorePlus: { EB: 450, WB: 220, 3: 250, 4: 333, 5: 417, 6: 500, 7: 583, 8: 667, 9: 750, 10: 833, 11: 916 },
+    DuoPlus:  { EB: 50,  WB: 0,   3: 0,   4: 0,   5: 0,   6: 0,   7: 0,   8: 0,   9: 0,   10: 0,  11: 0   },
+    MaxPlus:  { EB: 50,  WB: 0,   3: 0,   4: 0,   5: 0,   6: 0,   7: 0,   8: 0,   9: 0,   10: 0,  11: 0   },
+  }
+};
+
+const DISC_GOLD = {
+  PGMY: {
+    Core: { EB: 1800, WB: 910,  3: 131, 4: 174, 5: 218, 6: 261, 7: 305, 8: 348, 9: 392, 10: 435, 11: 479 },
+    Pro:  { EB: 1600, WB: 800,  3: 199, 4: 266, 5: 332, 6: 399, 7: 465, 8: 531, 9: 598, 10: 664, 11: 731 },
+    Max:  { EB: 1200, WB: 610,  3: 316, 4: 422, 5: 527, 6: 632, 7: 738, 8: 843, 9: 948, 10: 1054, 11: 1159 },
+  },
+  iPMY: {
+    iCore: { EB: 1750, WB: 880, 3: 149, 4: 198, 5: 248, 6: 298, 7: 347, 8: 397, 9: 446, 10: 496, 11: 545 },
+    iPro:  { EB: 1500, WB: 750, 3: 230, 4: 307, 5: 383, 6: 460, 7: 537, 8: 613, 9: 690, 10: 767, 11: 843 },
+    iMax:  { EB: 1200, WB: 610, 3: 318, 4: 423, 5: 529, 6: 635, 7: 741, 8: 847, 9: 953, 10: 1058, 11: 1164 },
+  },
+  Plus: {
+    CorePlus: { EB: 1450, WB: 710, 3: 250, 4: 333, 5: 417, 6: 500, 7: 583, 8: 667, 9: 750, 10: 833, 11: 916 },
+    DuoPlus:  { EB: 950,  WB: 480, 3: 394, 4: 525, 5: 656, 6: 788, 7: 919, 8: 1050, 9: 1181, 10: 1313, 11: 1444 },
+    MaxPlus:  { EB: 300,  WB: 150, 3: 604, 4: 806, 5: 1007, 6: 1209, 7: 1410, 8: 1611, 9: 1813, 10: 2014, 11: 2216 },
+  }
+};
+
+const DISC_ELITE = {
+  PGMY: {
+    Core: { EB: 3550, WB: 2670, 3: 131, 4: 174, 5: 218, 6: 261, 7: 305, 8: 348, 9: 392, 10: 435, 11: 479 },
+    Pro:  { EB: 3350, WB: 2510, 3: 199, 4: 266, 5: 332, 6: 399, 7: 465, 8: 531, 9: 598, 10: 664, 11: 731 },
+    Max:  { EB: 2950, WB: 2220, 3: 316, 4: 422, 5: 527, 6: 632, 7: 738, 8: 843, 9: 948, 10: 1054, 11: 1159 },
+  },
+  iPMY: {
+    iCore: { EB: 3500, WB: 2630, 3: 149, 4: 198, 5: 248, 6: 298, 7: 347, 8: 397, 9: 446, 10: 496, 11: 545 },
+    iPro:  { EB: 3250, WB: 2430, 3: 230, 4: 307, 5: 383, 6: 460, 7: 537, 8: 613, 9: 690, 10: 767, 11: 843 },
+    iMax:  { EB: 2950, WB: 2220, 3: 318, 4: 423, 5: 529, 6: 635, 7: 741, 8: 847, 9: 953, 10: 1058, 11: 1164 },
+  },
+  Plus: {
+    CorePlus: { EB: 3200, WB: 2380, 3: 250, 4: 333, 5: 417, 6: 500, 7: 583, 8: 667, 9: 750, 10: 833, 11: 916 },
+    DuoPlus:  { EB: 2700, WB: 2040, 3: 394, 4: 525, 5: 656, 6: 788, 7: 919, 8: 1050, 9: 1181, 10: 1313, 11: 1444 },
+    MaxPlus:  { EB: 2050, WB: 1530, 3: 604, 4: 806, 5: 1007, 6: 1209, 7: 1410, 8: 1611, 9: 1813, 10: 2014, 11: 2216 },
+  }
+};
+
+const DISC_BY_TIER = { Bronze: DISC, Silver: DISC_SILVER, Gold: DISC_GOLD, Elite: DISC_ELITE };
+
+let selectedPkgs = [null, null];
+let selectedPeriod = null;
+let expandedCards = {};
+
+function getDiscount(group, pkg, tier, period) {
+  const d = DISC_BY_TIER[tier];
+  if (!d || !d[group] || !d[group][pkg]) return 0;
+  return d[group][pkg][period] || 0;
+}
+
+function fmtRM(val) {
+  return 'RM ' + val.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function getRelation(currentPrice, newTierPrice) {
+  if (newTierPrice > currentPrice) return 'Upgrade';
+  if (newTierPrice < currentPrice) return 'Downgrade';
+  return 'Maintain';
+}
+
+function selectPkg(el) {
+  const pkg = el.dataset.pkg;
+  const group = el.dataset.group;
+  const price = parseInt(el.dataset.price);
+
+  const existing0 = selectedPkgs[0] ? selectedPkgs[0].pkg : null;
+  const existing1 = selectedPkgs[1] ? selectedPkgs[1].pkg : null;
+
+  if (existing0 === pkg) {
+    selectedPkgs[0] = null;
+  } else if (existing1 === pkg) {
+    selectedPkgs[1] = null;
+  } else if (!selectedPkgs[0]) {
+    selectedPkgs[0] = { pkg, group, price };
+  } else if (!selectedPkgs[1]) {
+    selectedPkgs[1] = { pkg, group, price };
+  } else {
+    return;
+  }
+
+  document.querySelectorAll('.pkg-card').forEach(c => c.classList.remove('selected'));
+  selectedPkgs.forEach(s => {
+    if (s) {
+      const card = document.querySelector('.pkg-card[data-pkg="' + s.pkg + '"]');
+      if (card) card.classList.add('selected');
+    }
+  });
+
+  updateSlotDisplay();
+  renderResults();
+}
+
+function updateSlotDisplay() {
+  ['slot1', 'slot2'].forEach(function(id, i) {
+    const s = selectedPkgs[i];
+    const el = document.getElementById(id + '-display');
+    if (s) {
+      el.innerHTML = '<span style="font-size:13px; font-weight:500; color:var(--color-text-primary);">' + s.pkg + '</span> <span style="font-size:11px; color:var(--color-text-secondary);">(RM ' + s.price.toLocaleString() + ')</span>';
+    } else {
+      el.innerHTML = '<span style="font-size:12px; color:var(--color-text-tertiary);">Not selected</span>';
+    }
+  });
+}
+
+function selectPeriod(btn) {
+  document.querySelectorAll('.period-btn').forEach(function(b) { b.classList.remove('selected'); });
+  btn.classList.add('selected');
+  selectedPeriod = btn.dataset.period;
+  renderResults();
+}
+
+function renderResults() {
+  const activePkgs = selectedPkgs.filter(Boolean);
+  const section = document.getElementById('results-section');
+  const container = document.getElementById('results-per-pkg');
+  const totalsBar = document.getElementById('totals-bar');
+
+  if (activePkgs.length === 0 || !selectedPeriod) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  container.innerHTML = '';
+
+  let grandTotal = 0, grandDiscount = 0;
+
+  activePkgs.forEach(function(sel, idx) {
+    const wrapDiv = document.createElement('div');
+    wrapDiv.style.marginBottom = '1.5rem';
+
+    const label = document.createElement('div');
+    label.className = 'section-title';
+    label.textContent = sel.pkg + ' (RM ' + sel.price.toLocaleString() + ') — renewing to:';
+    wrapDiv.appendChild(label);
+
+    const grid = document.createElement('div');
+    grid.className = 'result-grid';
+
+    TIERS.forEach(function(tier) {
+      const tierPrice = TIER_PRICES[tier];
+      const disc = getDiscount(sel.group, sel.pkg, tier, selectedPeriod);
+      const afterDisc = tierPrice - disc;
+      const withSST = afterDisc * (1 + SST);
+      const pct = tierPrice > 0 ? Math.round((disc / tierPrice) * 100) : 0;
+      const relation = getRelation(sel.price, tierPrice);
+
+      grandDiscount += disc;
+      grandTotal += withSST;
+
+      const card = document.createElement('div');
+      card.className = 'result-pkg-card';
+      const cardKey = idx + '-' + tier;
+      if (expandedCards[cardKey]) card.classList.add('expanded');
+
+      card.innerHTML =
+        '<i class="ti ti-chevron-down expand-arrow" aria-hidden="true"></i>' +
+        '<div class="r-tier">' + tier + '</div>' +
+        '<div class="r-price-full">' + fmtRM(tierPrice) + '</div>' +
+        '<div class="r-price-final">' + fmtRM(withSST) + '</div>' +
+        '<div style="font-size: 10px; color: var(--color-text-tertiary); margin-bottom: 4px;">incl. 8% SST</div>' +
+        '<span class="r-disc-badge">' + (disc > 0 ? 'Save ' + fmtRM(disc) + ' (' + pct + '%)' : 'No discount') + '</span>' +
+        '<div style="font-size: 10px; color: var(--color-text-secondary); margin-top: 6px;">' + relation + '</div>';
+
+      const breakdown = document.createElement('div');
+      breakdown.className = 'breakdown-section' + (expandedCards[cardKey] ? ' visible' : '');
+      breakdown.innerHTML =
+        '<h4>' + sel.pkg + ' &rarr; ' + tier + '</h4>' +
+        '<div class="bk-row"><span class="bk-label">New package</span><span class="bk-val">' + tier + '</span></div>' +
+        '<div class="bk-row"><span class="bk-label">List price</span><span class="bk-val">' + fmtRM(tierPrice) + '</span></div>' +
+        '<div class="bk-row"><span class="bk-label">Period</span><span class="bk-val">' + getPeriodLabel(selectedPeriod) + '</span></div>' +
+        '<div class="bk-row"><span class="bk-label">Discount amount</span><span class="bk-val highlight">' + (disc > 0 ? '&ndash; ' + fmtRM(disc) : 'None') + '</span></div>' +
+        '<div class="bk-row"><span class="bk-label">Discount %</span><span class="bk-val highlight">' + pct + '%</span></div>' +
+        '<div class="bk-row"><span class="bk-label">Price after discount</span><span class="bk-val">' + fmtRM(afterDisc) + '</span></div>' +
+        '<div class="bk-row"><span class="bk-label">SST (8%)</span><span class="bk-val">+ ' + fmtRM(afterDisc * SST) + '</span></div>' +
+        '<div class="bk-row" style="font-weight:500;"><span class="bk-label" style="color:var(--red-900);font-weight:500;">Final amount to pay</span><span class="bk-val highlight" style="font-size:14px;">' + fmtRM(withSST) + '</span></div>' +
+        '<div class="bk-row"><span class="bk-label">Move type</span><span class="bk-val">' + relation + '</span></div>';
+
+      card.appendChild(breakdown);
+      card.addEventListener('click', function() {
+        const isExp = expandedCards[cardKey];
+        expandedCards[cardKey] = !isExp;
+        card.classList.toggle('expanded', !isExp);
+        breakdown.classList.toggle('visible', !isExp);
+      });
+
+      grid.appendChild(card);
+    });
+
+    wrapDiv.appendChild(grid);
+    container.appendChild(wrapDiv);
+  });
+
+  if (activePkgs.length > 0) {
+    totalsBar.style.display = 'grid';
+    totalsBar.innerHTML =
+      '<div class="t-item"><div class="t-label">Total discount</div><div class="t-val">' + fmtRM(grandDiscount) + '</div></div>' +
+      '<div class="t-item"><div class="t-label">Total to pay (w/ SST)</div><div class="t-val">' + fmtRM(grandTotal) + '</div></div>' +
+      '<div class="t-item"><div class="t-label">Packages selected</div><div class="t-val">' + activePkgs.length + '</div></div>';
+  } else {
+    totalsBar.style.display = 'none';
+  }
+}
+
+function getPeriodLabel(p) {
+  if (p === 'EB') return 'EB / Renewal Month';
+  if (p === 'WB') return 'Win Back (AM+1)';
+  return p + ' months remaining';
+}
+</script>
+</body>
+</html>
