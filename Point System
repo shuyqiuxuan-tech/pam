@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agent Points Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --red-900: #4A1010;
+      --red-800: #7B1A1A;
+      --red-700: #9B1C1C;
+      --red-600: #B91C1C;
+      --red-500: #DC2626;
+      --red-100: #FEE2E2;
+      --red-50:  #FFF5F5;
+      --white:   #FFFFFF;
+      --gray-50: #F9FAFB;
+      --gray-100:#F3F4F6;
+      --gray-200:#E5E7EB;
+      --gray-300:#D1D5DB;
+      --gray-400:#9CA3AF;
+      --gray-600:#4B5563;
+      --gray-700:#374151;
+      --gray-800:#1F2937;
+    }
+    body { background: var(--white); min-height: 100vh; font-family: 'Roboto', sans-serif; color: var(--gray-800); }
+    .wrapper { max-width: 680px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+    /* Header */
+    .header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 2px solid var(--red-700); }
+    .header-logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px; }
+    .header-icon { width: 40px; height: 40px; background: var(--red-700); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+    .header-icon i { color: white; font-size: 22px; }
+    .header h1 { font-size: 24px; font-weight: 700; color: var(--red-900); letter-spacing: -0.3px; }
+    .header p { font-size: 14px; color: var(--gray-600); margin-top: 6px; }
+
+    /* Lookup card */
+    .lookup-card { background: var(--white); border: 1.5px solid var(--red-700); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; }
+    .lookup-label { font-size: 11px; font-weight: 500; color: var(--red-800); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px; }
+    .lookup-row { display: flex; gap: 10px; }
+    .lookup-input { flex: 1; height: 44px; border: 1.5px solid var(--gray-200); border-radius: 8px; padding: 0 14px; font-size: 15px; font-family: 'Roboto', sans-serif; color: var(--gray-800); outline: none; transition: border-color 0.15s; }
+    .lookup-input:focus { border-color: var(--red-600); box-shadow: 0 0 0 3px rgba(185,28,28,0.08); }
+    .lookup-input::placeholder { color: var(--gray-400); }
+    .lookup-btn { height: 44px; padding: 0 22px; background: var(--red-700); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; font-family: 'Roboto', sans-serif; cursor: pointer; transition: background 0.15s; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+    .lookup-btn:hover { background: var(--red-800); }
+    .lookup-btn:active { background: var(--red-900); transform: scale(0.98); }
+
+    /* Result panel */
+    .result-panel { display: none; margin-top: 1.25rem; }
+    .result-panel.show { display: block; }
+    .result-inner { background: var(--red-50); border: 1px solid var(--red-100); border-radius: 10px; padding: 1.25rem 1.5rem; }
+    .result-name { font-size: 20px; font-weight: 700; color: var(--red-900); }
+    .result-id { font-size: 12px; color: var(--gray-600); margin-bottom: 1rem; }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .stat-box { background: var(--white); border: 1px solid var(--red-100); border-radius: 8px; padding: 0.85rem 1rem; text-align: center; }
+    .stat-val { font-size: 28px; font-weight: 700; color: var(--red-700); line-height: 1.1; }
+    .stat-label { font-size: 11px; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.7px; margin-top: 4px; }
+    .rank-badge { display: inline-flex; align-items: center; gap: 6px; margin-top: 1rem; background: var(--red-700); color: white; font-size: 13px; font-weight: 500; padding: 5px 14px; border-radius: 20px; }
+    .not-found { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 10px; padding: 1rem 1.5rem; font-size: 14px; color: var(--gray-600); display: flex; align-items: center; gap: 8px; }
+    .not-in-top { background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 10px; padding: 0.9rem 1.25rem; font-size: 13px; color: #92400E; display: flex; align-items: center; gap: 8px; margin-top: 0.85rem; }
+
+    /* Leaderboard */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .section-title { font-size: 12px; font-weight: 500; color: var(--red-800); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; }
+    .lb-note { font-size: 11px; color: var(--gray-400); display: flex; align-items: center; gap: 4px; }
+
+    .lb-table { width: 100%; border-collapse: collapse; border-radius: 10px; overflow: hidden; border: 1px solid var(--gray-200); }
+    .lb-table thead tr { background: var(--red-700); }
+    .lb-table thead th { padding: 11px 16px; font-size: 11px; font-weight: 500; color: white; text-align: left; letter-spacing: 0.7px; text-transform: uppercase; }
+    .lb-table thead th.points-col { text-align: center; }
+    .lb-table tbody tr { border-bottom: 1px solid var(--gray-100); transition: background 0.1s; }
+    .lb-table tbody tr:last-child { border-bottom: none; }
+    .lb-table tbody tr:hover { background: var(--red-50); }
+    .lb-table tbody tr.highlight-row { background: #FEF9C3; }
+    .lb-table tbody tr.highlight-row:hover { background: #FEF08A; }
+    .lb-table tbody td { padding: 13px 16px; font-size: 14px; color: var(--gray-800); vertical-align: middle; }
+
+    /* Rank cell */
+    .rank-cell { display: flex; align-items: center; gap: 9px; }
+    .medal { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .medal-1 { background: #FFD700; color: #7B4F00; }
+    .medal-2 { background: #D1D5DB; color: #374151; }
+    .medal-3 { background: #D97706; color: #451A03; }
+    .medal-n { background: var(--gray-100); color: var(--gray-600); font-size: 12px; }
+
+    /* Name cell */
+    .name-hidden { color: var(--gray-300); font-style: italic; font-size: 13px; letter-spacing: 0.5px; user-select: none; }
+    .name-visible { font-weight: 600; color: var(--red-800); }
+    .you-tag { font-size: 10px; font-weight: 600; background: var(--red-100); color: var(--red-700); padding: 2px 7px; border-radius: 10px; margin-left: 7px; text-transform: uppercase; letter-spacing: 0.5px; vertical-align: middle; }
+
+    /* Points cell — PROMINENT */
+    .points-col { text-align: center; }
+    .points-chip { display: inline-flex; align-items: center; justify-content: center; min-width: 56px; padding: 5px 14px; background: var(--red-700); color: white; font-size: 17px; font-weight: 700; border-radius: 20px; letter-spacing: -0.3px; }
+    .highlight-row .points-chip { background: var(--red-800); box-shadow: 0 0 0 2px var(--red-400, #F87171); }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <div class="header-logo">
+      <div class="header-icon"><i class="ti ti-trophy"></i></div>
+      <h1>Agent Points Portal</h1>
+    </div>
+    <p>Enter your agent ID to view your points and leaderboard standing</p>
+  </div>
+
+  <div class="lookup-card">
+    <div class="lookup-label"><i class="ti ti-id-badge"></i> Look up your points</div>
+    <div class="lookup-row">
+      <input class="lookup-input" type="text" id="agentInput" placeholder="Enter your agent ID" maxlength="10" />
+      <button class="lookup-btn" onclick="lookupAgent()">
+        <i class="ti ti-search" style="font-size:15px"></i> Check
+      </button>
+    </div>
+    <div class="result-panel" id="resultPanel"></div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title"><i class="ti ti-chart-bar" style="font-size:15px"></i> Top 10 Leaderboard</div>
+    <div class="lb-note"><i class="ti ti-eye-off" style="font-size:13px"></i> Names hidden for privacy</div>
+  </div>
+
+  <table class="lb-table" aria-label="Top 10 leaderboard">
+    <thead>
+      <tr>
+        <th style="width:52px">Rank</th>
+        <th>Agent</th>
+        <th class="points-col">Points</th>
+      </tr>
+    </thead>
+    <tbody id="lbBody"></tbody>
+  </table>
+
+</div>
+<script>
+  const allAgents = [
+    {id:'33333', name:'Agent E',  boost:9,  superboost:16, total:25},
+    {id:'1111',  name:'Karwai',   boost:3,  superboost:20, total:23},
+    {id:'2222',  name:'Yik Ken',  boost:4,  superboost:16, total:20},
+    {id:'3333',  name:'Rainier',  boost:7,  superboost:12, total:19},
+    {id:'5555',  name:'Adrian',   boost:10, superboost:8,  total:18},
+    {id:'6666',  name:'Eza',      boost:11, superboost:6,  total:17},
+    {id:'11111', name:'Agent C',  boost:2,  superboost:14, total:16},
+    {id:'8888',  name:'Agent F',  boost:5,  superboost:10, total:15},
+    {id:'4444',  name:'Nicole',   boost:6,  superboost:8,  total:14},
+    {id:'44444', name:'Agent F',  boost:6,  superboost:8,  total:14},
+    {id:'66666', name:'Agent H',  boost:3,  superboost:10, total:13},
+    {id:'88888', name:'Agent J',  boost:12, superboost:0,  total:12},
+    {id:'7777',  name:'Pam',      boost:9,  superboost:2,  total:11},
+    {id:'9999',  name:'Agent B',  boost:3,  superboost:8,  total:11},
+    {id:'55555', name:'Agent G',  boost:2,  superboost:6,  total:8},
+    {id:'77777', name:'Agent I',  boost:0,  superboost:6,  total:6},
+    {id:'22222', name:'Agent D',  boost:1,  superboost:4,  total:5},
+  ];
+
+  const top10 = allAgents.slice(0, 10);
+
+  function buildLeaderboard(highlightId) {
+    const tbody = document.getElementById('lbBody');
+    tbody.innerHTML = '';
+    top10.forEach((a, i) => {
+      const rank = i + 1;
+      const isHL = highlightId && a.id === highlightId;
+      const medalClass = rank===1?'medal-1':rank===2?'medal-2':rank===3?'medal-3':'medal-n';
+      const tr = document.createElement('tr');
+      if (isHL) tr.className = 'highlight-row';
+
+      let nameCell;
+      if (isHL) {
+        nameCell = `<span class="name-visible">${a.name}</span><span class="you-tag">you</span>`;
+      } else {
+        nameCell = `<span class="name-hidden">&#8212;&#8212;&#8212;&#8212;&#8212;</span>`;
+      }
+
+      tr.innerHTML = `
+        <td><div class="rank-cell"><span class="medal ${medalClass}">${rank}</span></div></td>
+        <td>${nameCell}</td>
+        <td class="points-col"><span class="points-chip">${a.total}</span></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function lookupAgent() {
+    const val = document.getElementById('agentInput').value.trim();
+    const panel = document.getElementById('resultPanel');
+    const agent = allAgents.find(a => a.id === val);
+    panel.className = 'result-panel show';
+
+    if (!agent) {
+      panel.innerHTML = `<div class="not-found"><i class="ti ti-alert-circle" style="color:#B91C1C;font-size:18px"></i> No agent found with ID <strong>${val}</strong>. Please check and try again.</div>`;
+      buildLeaderboard(null);
+      return;
+    }
+
+    const overallRank = allAgents.findIndex(a => a.id === val) + 1;
+    const rankLabel = overallRank===1?'🥇 1st':overallRank===2?'🥈 2nd':overallRank===3?'🥉 3rd':`#${overallRank}`;
+    const inTop10 = overallRank <= 10;
+
+    panel.innerHTML = `
+      <div class="result-inner">
+        <div class="result-name">${agent.name}</div>
+        <div class="result-id">Agent ID: ${agent.id}</div>
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-val">${agent.boost}</div><div class="stat-label">Boost</div></div>
+          <div class="stat-box"><div class="stat-val">${agent.superboost}</div><div class="stat-label">SuperBoost</div></div>
+          <div class="stat-box"><div class="stat-val">${agent.total}</div><div class="stat-label">Total</div></div>
+        </div>
+        <span class="rank-badge"><i class="ti ti-medal" style="font-size:14px"></i> Ranked ${rankLabel} overall</span>
+      </div>
+      ${!inTop10 ? `<div class="not-in-top"><i class="ti ti-info-circle" style="font-size:16px"></i> You are not in the top 10 yet. Keep earning points to climb the leaderboard!</div>` : ''}`;
+
+    buildLeaderboard(inTop10 ? agent.id : null);
+  }
+
+  document.getElementById('agentInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') lookupAgent();
+  });
+
+  buildLeaderboard(null);
+</script>
+</body>
+</html>
